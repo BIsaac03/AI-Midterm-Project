@@ -4,59 +4,111 @@
 
 using namespace std;
 
-void shufflePuzzle (char positions[], int moves);
+void shufflePuzzle (char positions[], int &indexOfX, int moves);
+char choose (int indexOfX);
 void printPuzzle(char positions[]);
 void move(char type, char positions[], int &indexOfX);
 
-/*
-void moveLeft(char positions[], int &indexOfX);
-void moveRight(char positions[], int &indexOfX);
-void moveUp(char positions[], int &indexOfX);
-void moveDown(char positions[], int &indexOfX);
-*/
-
 int main()
 {
+    srand(time(NULL));
     char positions[] = {'1', '2', '3', '4', '5', '6', '7', '8', 'X'};
-
     int indexOfX = 8;
 
-//  shufflePuzzle(positions , 1000);
-
+    shufflePuzzle(positions, indexOfX, 1000);
     printPuzzle(positions);
-    move('L', positions, indexOfX);
-    printPuzzle(positions);
-    move('U', positions, indexOfX);
-    printPuzzle(positions);
-    move('R', positions, indexOfX);
-    printPuzzle(positions);
-    move('D', positions, indexOfX);
-    printPuzzle(positions);
-
-
-/*
-    printPuzzle(positions);
-    moveLeft(positions, indexOfX);
-    printPuzzle(positions);
-    moveUp(positions, indexOfX);
-    printPuzzle(positions);
-    moveRight(positions, indexOfX);
-    printPuzzle(positions);
-    moveDown(positions, indexOfX);
-    printPuzzle(positions);
-*/
-
 
     return 0;
 }
 
-void shufflePuzzle (char positions[], int moves)
-{
+// performs 'moves' random moves
+void shufflePuzzle (char positions[], int &indexOfX, int moves)
+{  
     for (int i = 0; i < moves; i++)
     {
-        // random number from 0-3
+        move(choose(indexOfX), positions, indexOfX);
+    }
+}
 
-        // move based on random number
+// chooses a random, valid direction to move
+char choose (int indexOfX)
+{
+    if (indexOfX == 0)
+    {
+        // returns a random direction (down or right)
+        int choice = rand()%2;
+        if (choice == 0) return 'D';
+        else if (choice == 1) return 'R';
+    }
+
+    else if (indexOfX == 1)
+    {
+        // returns a random direction (down, left, or right)
+        int choice = rand()%3;
+        if (choice == 0) return 'D';
+        else if (choice == 1) return 'L';
+        else if (choice == 2) return 'R';
+    }
+
+    else if (indexOfX == 2)
+    {
+        // returns a random direction (down or left)
+        int choice = rand()%2;
+        if (choice == 0) return 'D';
+        else if (choice == 1) return 'L';
+    }
+
+    else if (indexOfX == 3)
+    {
+        // returns a random direction (up, down, or right)
+        int choice = rand()%3;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'D';
+        else if (choice == 2) return 'R';
+    }
+
+    else if (indexOfX == 4)
+    {
+        // returns a random direction (up, down, left, or right)
+        int choice = rand()%4;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'D';
+        else if (choice == 2) return 'L';
+        else if (choice == 3) return 'R';
+    }
+
+    else if (indexOfX == 5)
+    {
+        // returns a random direction (up, down, or left)
+        int choice = rand()%3;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'D';
+        else if (choice == 2) return 'L';
+    }
+
+    else if (indexOfX == 6)
+    {
+        // returns a random direction (up or right)
+        int choice = rand()%2;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'R';
+    }
+
+    else if (indexOfX == 7)
+    {
+        // returns a random direction (up, left, or right)
+        int choice = rand()%3;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'L';
+        else if (choice == 2) return 'R';
+    }
+
+    else if (indexOfX == 8)
+    {
+        // returns a random direction (up or left)
+        int choice = rand()%2;
+        if (choice == 0) return 'U';
+        else if (choice == 1) return 'L';
     }
 }
 
@@ -68,6 +120,7 @@ void printPuzzle(char positions[])
     << positions[6] << " " << positions[7] << " " << positions[8] << "\n" << endl;
 }
 
+// swaps the X with an adjacent number
 void move(char type, char positions[], int &indexOfX)
 {
     int change;
@@ -93,53 +146,6 @@ void move(char type, char positions[], int &indexOfX)
     // updates location of the X to where swapped number was
     positions[indexOfX + change] = 'X';
 
-    // updates value for location of the X
+    // updates indexOfX
     indexOfX = indexOfX + change;
-
-    cout << "X: " << indexOfX << endl;
-
 }
-
-/*
-
-// swaps the X with the number on its left
-void moveLeft(char positions[], int &indexOfX)
-{
-    positions[indexOfX] = positions[indexOfX - 1];
-    positions[indexOfX - 1] = 'X';
-    // updates location of the X
-    indexOfX = indexOfX - 1;
-    cout << "X: " << indexOfX << endl;
-}
-
-// swaps the X with the number on its right
-void moveRight(char positions[], int &indexOfX)
-{
-    positions[indexOfX] = positions[indexOfX + 1];
-    positions[indexOfX + 1] = 'X';
-    // updates location of the X
-    indexOfX = indexOfX + 1;
-    cout << "X: " << indexOfX << endl;
-}
-
-// swaps the X with the number above it
-void moveUp(char positions[], int &indexOfX)
-{
-    positions[indexOfX] = positions[indexOfX - 3];
-    positions[indexOfX - 3] = 'X';
-    // updates location of the X
-    indexOfX = indexOfX - 3;
-    cout << "X: " << indexOfX << endl;
-}
-
-// swaps the X with the number below it
-void moveDown(char positions[], int &indexOfX)
-{
-    positions[indexOfX] = positions[indexOfX + 3];
-    positions[indexOfX + 3] = 'X';
-    // updates location of the X
-    indexOfX = indexOfX + 3;
-    cout << "X: " << indexOfX << endl;
-}
-
-*/
