@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <unistd.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -8,16 +10,33 @@ void shufflePuzzle (char positions[], int &indexOfX, int moves);
 char choose (int indexOfX);
 void printPuzzle(char positions[]);
 void move(char type, char positions[], int &indexOfX);
+int HammingDist(char positions[]);
 
 int main()
 {
     srand(time(NULL));
     char positions[] = {'1', '2', '3', '4', '5', '6', '7', '8', 'X'};
     int indexOfX = 8;
+    int moves = 0;
+
+    cout << "Before shuffle: " << HammingDist(positions) << endl;
 
     shufflePuzzle(positions, indexOfX, 1000);
     printPuzzle(positions);
 
+    cout << "After shuffle: " << HammingDist(positions) << endl;
+
+/*
+    cout << "Finding shortest solution..." << endl;
+
+    cout << "Solution found in " << moves << " moves" << endl;
+
+
+    usleep(500000);
+
+    printPuzzle()
+
+*/
     return 0;
 }
 
@@ -110,6 +129,7 @@ char choose (int indexOfX)
         if (choice == 0) return 'U';
         else if (choice == 1) return 'L';
     }
+    return -1;                                                                  // should not return this
 }
 
 // prints the location of all numbers and the X in a (3x3) grid
@@ -148,4 +168,18 @@ void move(char type, char positions[], int &indexOfX)
 
     // updates indexOfX
     indexOfX = indexOfX + change;
+}
+
+int HammingDist(char positions[])
+{
+    int heuristic = 0;
+
+    for (int i = 0; i < sizeof(&positions); i++)
+    {
+        if (positions[i] != '1' + i)
+        {
+            heuristic += 1;
+        }
+    }
+    return heuristic;
 }
