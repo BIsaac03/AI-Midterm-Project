@@ -5,60 +5,50 @@
 
 using namespace std;
 
-void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves);
-char choose (int XindexOfX, int YindexOfX);
-void printPuzzle(char positions[3][3]);
-void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX);
-int HammingDist(char positions[3][3]);
-int ManhattanDist(char positions[3][3]);
+class State
+{
+    private:
+    
+        char choose (int XindexOfX, int YindexOfX);
+        void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX);
+
+    public:
+
+        char positions[3][3] = {{'1', '2', '3'}, {'4', '5', '6'}, {'7', '8', 'X'}};
+        int XindexOfX = 2;
+        int YindexOfX = 2;
+
+        void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves);
+        void printPuzzle(char positions[3][3]);
+        int HammingDist(char positions[3][3]);
+        int ManhattanDist(char positions[3][3]);
+};
 
 int main()
 {
     srand(time(NULL));
-    char positions[3][3] = {{'1', '2', '3'}, {'4', '5', '6'}, {'7', '8', 'X'}};
-    int XindexOfX = 2;
-    int YindexOfX = 2;
-    int moves = 0;
+
+    State initial;
+    State shuffled;
 
     cout << endl;
 
-    printPuzzle(positions);
+    initial.printPuzzle(initial.positions);
 
-    cout << "Ham before shuffle: " << HammingDist(positions) << endl;
-    cout << "Man before shuffle: " << ManhattanDist(positions) << endl << endl;
+    cout << "Ham before shuffle: " << initial.HammingDist(initial.positions) << endl;
+    cout << "Man before shuffle: " << initial.ManhattanDist(initial.positions) << endl << endl;
 
-    shufflePuzzle(positions, XindexOfX, YindexOfX, 1000);
+    shuffled.shufflePuzzle(shuffled.positions, shuffled.XindexOfX, shuffled.YindexOfX, 1000);
+    shuffled.printPuzzle(shuffled.positions); 
 
-    printPuzzle(positions);
+    cout << "Ham after shuffle: " << shuffled.HammingDist(shuffled.positions) << endl;
+    cout << "Man after shuffle: " << shuffled.ManhattanDist(shuffled.positions) << endl << endl;
 
-    cout << "Ham after shuffle: " << HammingDist(positions) << endl;
-    cout << "Man after shuffle: " << ManhattanDist(positions) << endl << endl;
-
-/*
-    cout << "Finding shortest solution..." << endl;
-
-    cout << "Solution found in " << moves << " moves" << endl;
-
-
-    usleep(500000);
-
-    printPuzzle()
-
-*/
     return 0;
 }
 
-// performs 'moves' random moves
-void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves)
-{  
-    for (int i = 0; i < moves; i++)
-    {
-        move(choose(XindexOfX, YindexOfX), positions, XindexOfX, YindexOfX);
-    }
-}
-
 // chooses a random, valid direction to move
- char choose (int XindexOfX, int YindexOfX)
+char State::choose (int XindexOfX, int YindexOfX)
 {
     if (YindexOfX == 0)
     {
@@ -150,18 +140,8 @@ void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int mo
     return -1;                                                                         // should not return this
 }
 
-// prints the location of all numbers and the X in a (3x3) grid
-void printPuzzle(char positions[3][3])
-{
-    for (int i = 0; i < 3; i++)
-    {
-        cout << positions[i][0] << " " << positions[i][1] << " " << positions[i][2] << endl;
-    }
-    cout << endl;
-}
-
 // swaps the X with an adjacent number
-void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX)
+void State::move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX)
 {
     int xchange = 0;
     int ychange = 0;
@@ -193,8 +173,27 @@ void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX)
     YindexOfX = YindexOfX + ychange;
 }
 
+// performs 'moves' random moves
+void State::shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves)
+{  
+    for (int i = 0; i < moves; i++)
+    {
+        move(choose(XindexOfX, YindexOfX), positions, XindexOfX, YindexOfX);
+    }
+}
+
+// prints the location of all numbers and the X in a (3x3) grid
+void State::printPuzzle(char positions[3][3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        cout << positions[i][0] << " " << positions[i][1] << " " << positions[i][2] << endl;
+    }
+    cout << endl;
+}
+
 // returns number of incorect values
-int HammingDist(char positions[3][3])
+int State::HammingDist(char positions[3][3])
 {
     int heuristic = 0;
 
@@ -214,7 +213,7 @@ int HammingDist(char positions[3][3])
 }
 
 // returns sum of all distances from correct value
-int ManhattanDist(char positions[3][3])
+int State::ManhattanDist(char positions[3][3])
 {
     int heuristic = 0;
 
