@@ -2,6 +2,8 @@
 #include <string>
 #include <time.h>
 #include <unistd.h>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -9,72 +11,55 @@ class State
 {
     private:
     
-        char choose (int XindexOfX, int YindexOfX);
+        void findPotentialMoves(int XindexOfX, int YindexOfX, vector<char> &potentialMoves);
         void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX);
+        int HammingDist(char positions[3][3]);
+        int ManhattanDist(char positions[3][3]);
 
     public:
 
         char positions[3][3] = {{'1', '2', '3'}, {'4', '5', '6'}, {'7', '8', 'X'}};
+        vector<char> potentialMoves = {'U', 'L'};
         int XindexOfX = 2;
         int YindexOfX = 2;
 
         void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves);
         void printPuzzle(char positions[3][3]);
-        int HammingDist(char positions[3][3]);
-        int ManhattanDist(char positions[3][3]);
+        bool isSolved(char positions[3][3]);
 };
 
 int main()
 {
     srand(time(NULL));
 
-    State initial;
     State shuffled;
 
     cout << endl;
 
-    initial.printPuzzle(initial.positions);
-
-    cout << "Ham before shuffle: " << initial.HammingDist(initial.positions) << endl;
-    cout << "Man before shuffle: " << initial.ManhattanDist(initial.positions) << endl << endl;
-
     shuffled.shufflePuzzle(shuffled.positions, shuffled.XindexOfX, shuffled.YindexOfX, 1000);
     shuffled.printPuzzle(shuffled.positions); 
-
-    cout << "Ham after shuffle: " << shuffled.HammingDist(shuffled.positions) << endl;
-    cout << "Man after shuffle: " << shuffled.ManhattanDist(shuffled.positions) << endl << endl;
 
     return 0;
 }
 
-// chooses a random, valid direction to move
-char State::choose (int XindexOfX, int YindexOfX)
+// updates potentialMoves vector to reflect all current legal moves
+void State::findPotentialMoves(int XindexOfX, int YindexOfX, vector<char> &potentialMoves)
 {
     if (YindexOfX == 0)
     {
         if (XindexOfX == 0)
         {
-            // returns a random direction (down or right)
-            int choice = rand()%2;
-            if (choice == 0) return 'D';
-            else if (choice == 1) return 'R';
+            potentialMoves = {'D', 'R'};
         }
 
         else if (XindexOfX == 1)
         {
-            // returns a random direction (down, left, or right)
-            int choice = rand()%3;
-            if (choice == 0) return 'D';
-            else if (choice == 1) return 'L';
-            else if (choice == 2) return 'R';
+            potentialMoves = {'D', 'L', 'R'};
         }
 
         else if (XindexOfX == 2)
         {
-            // returns a random direction (down or left)
-            int choice = rand()%2;
-            if (choice == 0) return 'D';
-            else if (choice == 1) return 'L';
+            potentialMoves = {'D', 'L'};
         }
     }
 
@@ -82,30 +67,17 @@ char State::choose (int XindexOfX, int YindexOfX)
     {
         if (XindexOfX == 0)
         {
-            // returns a random direction (up, down, or right)
-            int choice = rand()%3;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'D';
-            else if (choice == 2) return 'R';
+            potentialMoves = {'U', 'D', 'R'};
         }
 
         else if (XindexOfX == 1)
         {
-            // returns a random direction (up, down, left, or right)
-            int choice = rand()%4;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'D';
-            else if (choice == 2) return 'L';
-            else if (choice == 3) return 'R';
+            potentialMoves = {'U', 'D', 'L', 'R'};
         }
 
         else if (XindexOfX == 2)
         {
-            // returns a random direction (up, down, or left)
-            int choice = rand()%3;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'D';
-            else if (choice == 2) return 'L';
+            potentialMoves = {'U', 'D', 'L'};
         }
     }
 
@@ -113,31 +85,19 @@ char State::choose (int XindexOfX, int YindexOfX)
     {
         if (XindexOfX == 0)
         {
-            // returns a random direction (up or right)
-            int choice = rand()%2;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'R';
+            potentialMoves = {'U', 'R'};
         }
 
         else if (XindexOfX == 1)
         {
-            // returns a random direction (up, left, or right)
-            int choice = rand()%3;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'L';
-            else if (choice == 2) return 'R';
+            potentialMoves = {'U', 'L', 'R'};
         }
 
         else if (XindexOfX == 2)
         {
-            // returns a random direction (up or left)
-            int choice = rand()%2;
-            if (choice == 0) return 'U';
-            else if (choice == 1) return 'L';
+            potentialMoves = {'U', 'L'};
         }
     }
-    
-    return -1;                                                                         // should not return this
 }
 
 // swaps the X with an adjacent number
@@ -178,7 +138,14 @@ void State::shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX,
 {  
     for (int i = 0; i < moves; i++)
     {
-        move(choose(XindexOfX, YindexOfX), positions, XindexOfX, YindexOfX);
+        findPotentialMoves(XindexOfX, YindexOfX, potentialMoves);
+
+        // chooses a random direction from the potentialMoves vector
+        int rng = rand() % size(potentialMoves);
+        char choice = potentialMoves[rng];
+
+        // moves in that direction
+        move(choice, positions, XindexOfX, YindexOfX);
     }
 }
 
@@ -232,4 +199,21 @@ int State::ManhattanDist(char positions[3][3])
     }
 
     return heuristic;
+}
+
+// determines if puzzle is solved
+bool State::isSolved(char positions[3][3])
+{
+    for(int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            // returns false if any value is not what it should be (unless it is X)
+            if(positions[i][j] != '1' + j + 3 * i && positions[i][j] != 'X')
+            {
+                return false;
+            }
+        }
+    }  
+    return true;
 }
