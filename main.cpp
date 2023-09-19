@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 
@@ -11,21 +12,21 @@ class State
 {
     private:
     
-        void findPotentialMoves(int XindexOfX, int YindexOfX, vector<char> &potentialMoves);
-        void move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX);
-        int HammingDist(char positions[3][3]);
-        int ManhattanDist(char positions[3][3]);
+        void findPotentialMoves(int XindexOf0, int YindexOf0, vector<char> &potentialMoves);
+        void move(char type, int positions[4][4], int &XindexOf0, int &YindexOf0);
+        int HammingDist(int positions[4][4]);
+        int ManhattanDist(int positions[4][4]);
 
     public:
 
-        char positions[3][3] = {{'1', '2', '3'}, {'4', '5', '6'}, {'7', '8', 'X'}};
+        int positions[4][4] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 0}};
         vector<char> potentialMoves = {'U', 'L'};
-        int XindexOfX = 2;
-        int YindexOfX = 2;
+        int XindexOf0 = 3;
+        int YindexOf0 = 3;
 
-        void shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves);
-        void printPuzzle(char positions[3][3]);
-        bool isSolved(char positions[3][3]);
+        void shufflePuzzle (int positions[4][4], int &XindexOf0, int &YindexOf0, int moves);
+        void printPuzzle(int positions[4][4]);
+        bool isSolved(int positions[4][4]);
 };
 
 int main()
@@ -36,64 +37,64 @@ int main()
 
     cout << endl;
 
-    shuffled.shufflePuzzle(shuffled.positions, shuffled.XindexOfX, shuffled.YindexOfX, 1000);
+    shuffled.shufflePuzzle(shuffled.positions, shuffled.XindexOf0, shuffled.YindexOf0, 1000);
     shuffled.printPuzzle(shuffled.positions); 
 
     return 0;
 }
 
 // updates potentialMoves vector to reflect all current legal moves
-void State::findPotentialMoves(int XindexOfX, int YindexOfX, vector<char> &potentialMoves)
+void State::findPotentialMoves(int XindexOf0, int YindexOf0, vector<char> &potentialMoves)
 {
-    if (YindexOfX == 0)
+    if (YindexOf0 == 0)
     {
-        if (XindexOfX == 0)
+        if (XindexOf0 == 0)
         {
             potentialMoves = {'D', 'R'};
         }
 
-        else if (XindexOfX == 1)
+        else if (XindexOf0 == 1 || XindexOf0 == 2)
         {
             potentialMoves = {'D', 'L', 'R'};
         }
 
-        else if (XindexOfX == 2)
+        else if (XindexOf0 == 3)
         {
             potentialMoves = {'D', 'L'};
         }
     }
 
-    else if (YindexOfX == 1)
+    else if (YindexOf0 == 1 || YindexOf0 == 2)
     {
-        if (XindexOfX == 0)
+        if (XindexOf0 == 0)
         {
             potentialMoves = {'U', 'D', 'R'};
         }
 
-        else if (XindexOfX == 1)
+        else if (XindexOf0 == 1 || XindexOf0 == 2)
         {
             potentialMoves = {'U', 'D', 'L', 'R'};
         }
 
-        else if (XindexOfX == 2)
+        else if (XindexOf0 == 3)
         {
             potentialMoves = {'U', 'D', 'L'};
         }
     }
 
-    else if (YindexOfX == 2)
+    else if (YindexOf0 == 3)
     {
-        if (XindexOfX == 0)
+        if (XindexOf0 == 0)
         {
             potentialMoves = {'U', 'R'};
         }
 
-        else if (XindexOfX == 1)
+        else if (XindexOf0 == 1 || XindexOf0 == 2)
         {
             potentialMoves = {'U', 'L', 'R'};
         }
 
-        else if (XindexOfX == 2)
+        else if (XindexOf0 == 3)
         {
             potentialMoves = {'U', 'L'};
         }
@@ -101,7 +102,7 @@ void State::findPotentialMoves(int XindexOfX, int YindexOfX, vector<char> &poten
 }
 
 // swaps the X with an adjacent number
-void State::move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX)
+void State::move(char type, int positions[4][4], int &XindexOf0, int &YindexOf0)
 {
     int xchange = 0;
     int ychange = 0;
@@ -122,55 +123,56 @@ void State::move(char type, char positions[3][3], int &XindexOfX, int &YindexOfX
         case 'R': *pXchange = 1;
     }
 
-    // updates location of swapped number to where the X was
-    positions[YindexOfX][XindexOfX] = positions[YindexOfX + ychange][XindexOfX + xchange];
+    // updates location of swapped number to where the 0 was
+    positions[YindexOf0][XindexOf0] = positions[YindexOf0 + ychange][XindexOf0 + xchange];
 
     // updates location of the X to where swapped number was
-    positions[YindexOfX + ychange][XindexOfX + xchange] = 'X';
+    positions[YindexOf0 + ychange][XindexOf0 + xchange] = 0;
 
-    // updates values for location of X
-    XindexOfX = XindexOfX + xchange;
-    YindexOfX = YindexOfX + ychange;
+    // updates values for location of 0
+    XindexOf0 = XindexOf0 + xchange;
+    YindexOf0 = YindexOf0 + ychange;
+
+    // updates legal moves
+    findPotentialMoves(XindexOf0, YindexOf0, potentialMoves);
 }
 
 // performs 'moves' random moves
-void State::shufflePuzzle (char positions[3][3], int &XindexOfX, int &YindexOfX, int moves)
+void State::shufflePuzzle (int positions[4][4], int &XindexOf0, int &YindexOf0, int moves)
 {  
     for (int i = 0; i < moves; i++)
     {
-        findPotentialMoves(XindexOfX, YindexOfX, potentialMoves);
-
         // chooses a random direction from the potentialMoves vector
         int rng = rand() % size(potentialMoves);
         char choice = potentialMoves[rng];
 
         // moves in that direction
-        move(choice, positions, XindexOfX, YindexOfX);
+        move(choice, positions, XindexOf0, YindexOf0);
     }
 }
 
-// prints the location of all numbers and the X in a (3x3) grid
-void State::printPuzzle(char positions[3][3])
+// prints the location of all numbers in a (4x4) grid
+void State::printPuzzle(int positions[4][4])
 {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
-        cout << positions[i][0] << " " << positions[i][1] << " " << positions[i][2] << endl;
+        cout << left << setw(4) << positions[i][0] << setw(4) << positions[i][1] << setw(4) << positions[i][2] << positions[i][3] << endl;
     }
     cout << endl;
 }
 
 // returns number of incorect values
-int State::HammingDist(char positions[3][3])
+int State::HammingDist(int positions[4][4])
 {
     int heuristic = 0;
 
     // for each index...
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 4; j++)
         {
-            // increments heuristic if value is not what it should be (unless it is X)
-            if (positions[i][j] != '1' + j + 3 * i && positions[i][j] != 'X')
+            // increments heuristic if value is not what it should be (unless it is 0)
+            if (positions[i][j] != 1 + j + 4 * i && positions[i][j] != 0)
             {
                 heuristic += 1;
             }
@@ -180,19 +182,21 @@ int State::HammingDist(char positions[3][3])
 }
 
 // returns sum of all distances from correct value
-int State::ManhattanDist(char positions[3][3])
+int State::ManhattanDist(int positions[4][4])
 {
     int heuristic = 0;
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 4; j++)
         {
-            if (positions[i][j] != 'X')
+            if (positions[i][j] != 0)
             {
-                int x = (positions[i][j] - '0' - 1) % 3;
-                int y = (positions[i][j] - '0' - 1) / 3;
+                // finds expected x and y values
+                int x = (positions[i][j] - 1) % 4;
+                int y = (positions[i][j] - 1) / 4;
 
+                // adds difference between expected and actual to heuristic
                 heuristic = heuristic + abs(x - j) + abs(y - i);
             }
         }
@@ -201,15 +205,14 @@ int State::ManhattanDist(char positions[3][3])
     return heuristic;
 }
 
-// determines if puzzle is solved
-bool State::isSolved(char positions[3][3])
+bool State::isSolved(int positions[4][4])
 {
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < 4; j++)
         {
-            // returns false if any value is not what it should be (unless it is X)
-            if(positions[i][j] != '1' + j + 3 * i && positions[i][j] != 'X')
+            // returns false if any value is not what it should be (unless it is 0)
+            if(positions[i][j] != 1 + j + 4 * i && positions[i][j] != 0)
             {
                 return false;
             }
