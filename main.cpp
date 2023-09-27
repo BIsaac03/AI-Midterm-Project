@@ -4,7 +4,6 @@
 #include <stack>
 //#include <algorithm>
 
-
 class Node
 {
     public:
@@ -13,83 +12,60 @@ class Node
         int movesFromStart;
         Node *parent;
     
-        Node(State puzzle): puzzle(puzzle), movesFromStart(0), parent(NULL) {}
+        Node(State initial): puzzle(initial), movesFromStart(0), parent(nullptr) {}
 };
 
-vector<Node> childNodes(Node parent, vector<Node> &potentialMoves);
-int Search(Node parent, int heuristic, vector<Node> &solution);
-int IDAstar(State puzzle, vector<Node> &solution);
+vector<Node> childNodes(Node parent);
+int Search(int heuristic, stack<Node> &path);
+stack<Node> IDAstar(State puzzle);
+void printPath(stack<Node> path);
 
 int main()
 {
     srand(time(NULL));
-    vector<Node> solution = {};
 
-    State initial;
     State shuffled;
 
     cout << endl;
 
-    shuffled.move('L');
-    shuffled.move('L');
-//    shuffled.move('L');
-    //shuffled.shufflePuzzle(5);
+    shuffled.shufflePuzzle(25);
     shuffled.printPuzzle(); 
+
+    cout << "heuristic of: " << shuffled.ManhattanDist() << endl;
 
     cout << "Searching for shortest path..." << endl << endl;
 
-    int fewestMoves = IDAstar(shuffled, solution);
+    stack<Node> path = IDAstar(shuffled);
 
-   cout << "Solution found in " << fewestMoves << " moves." << endl << endl;  
+    cout << "Solution found in " << size(path) - 1 << " moves." << endl << endl;  
 
-    // outputs the next state in the solution every 0.5 seconds
-    for (int i = 0; i < size(solution); i++)
-    {
-        solution[i].puzzle.printPuzzle();
-        usleep(500000);
-    }
+    printPath(path);
 
     return 0;
 }
 
 // uses IDA* search algorithm to find shortest path
-int IDAstar(State puzzle, vector<Node> &solution)
+stack<Node> IDAstar(State puzzle)
 {
+    stack<Node> path = {};
+
     int heuristic = puzzle.ManhattanDist();
 
     Node initial = Node(puzzle);
 
+    path.push(initial);
+
     while (1)
     {
-        int tmp = Search(initial, heuristic, solution);
+        int tmp = Search(heuristic, path);
 
         if (tmp = 1)
         {
-            return solution[0].movesFromStart;
+            return path;
         }
 
         heuristic = tmp;
     }
-
-/*
-    for (int i = 0; i < 10; i++)
-    {
-        vector<Node> children = childNodes(parent);
-
-        Node child = children[rand() % size(children)];
-
-        child.puzzle.printPuzzle();
-        
-        parent = child;
-    }
-
-    parent.puzzle.printPuzzle();
-
-    parent = *parent.parent;
-
-    parent.puzzle.printPuzzle();
-*/
-    return 0;
 }
 
 // updates vector with all adjacent nodes
@@ -102,7 +78,7 @@ vector<Node> childNodes(Node parent)
     for (int i = 0; i < size(parent.puzzle.potentialMoves); i++)
     {
         parent.puzzle.move(parent.puzzle.potentialMoves[i]);
-        Node child = Node(parent.puzzle);
+        Node child = parent;
         child.parent = &parent;
         child.movesFromStart++;
         potentialMoves.push_back(child);
@@ -113,8 +89,10 @@ vector<Node> childNodes(Node parent)
 }
 
 // searches for solution
-int Search(Node parent, int heuristic, vector<Node> &solution)
+int Search(int heuristic, stack<Node> &path)
 {
+    Node parent = path.top();
+
     int f = parent.movesFromStart + parent.puzzle.ManhattanDist();
 
     if (f > heuristic)
@@ -125,7 +103,7 @@ int Search(Node parent, int heuristic, vector<Node> &solution)
     if (parent.puzzle.isSolved())
     {
         cout << "Solved!" << endl;
-        solution.insert(solution.begin(), parent);
+        //path.push(parent);
         return 1;
     }
 
@@ -135,7 +113,14 @@ int Search(Node parent, int heuristic, vector<Node> &solution)
 
     for (int i = 0; i < size(potentialMoves); i++)
     {
-        int tmp = Search(potentialMoves[i], heuristic + 1, solution);
+        for (int i = 0; i < size(potentialMoves); i++)
+        {
+            cout << "C" << i + 1 << " dfs: " << potentialMoves[i].movesFromStart << " f: " << potentialMoves[i].puzzle.ManhattanDist() << endl;
+        }
+
+        path.push(potentialMoves[i]);
+
+        int tmp = Search(heuristic, path);
 
         if (tmp == 1)
         {
@@ -146,7 +131,28 @@ int Search(Node parent, int heuristic, vector<Node> &solution)
         {
             min = tmp;
         }
+
+        path.pop();
     }
 
     return min;
+}
+
+// prints the states in the path in reverse order (i.e. from unsolved to solved)
+void printPath(stack<Node> path)
+{
+    if (path.empty())
+    {
+        return;
+    }
+
+    Node State = path.top();
+
+    path.pop();
+
+    printPath(path);
+
+    usleep(1000000);
+
+    State.puzzle.printPuzzle();
 }
