@@ -2,7 +2,6 @@
 
 #include <time.h>
 #include <stack>
-//#include <algorithm>
 
 class Node
 {
@@ -16,8 +15,8 @@ class Node
 };
 
 vector<Node> childNodes(Node parent);
-int Search(int heuristic, stack<Node> &path);
-stack<Node> IDAstar(State puzzle);
+int Search(int threshold, stack<Node> &path, int heuristic);
+stack<Node> IDAstar(State puzzle, int heuristic);
 void printPath(stack<Node> path);
 
 int main()
@@ -28,28 +27,46 @@ int main()
 
     cout << endl;
 
-    shuffled.shufflePuzzle(25);
+    shuffled.shufflePuzzle(500);
+
     shuffled.printPuzzle(); 
 
-    cout << "heuristic of: " << shuffled.ManhattanDist() << endl;
+    cout << "With Manhattan heuristic of: " << shuffled.ManhattanDist() << endl;
 
     cout << "Searching for shortest path..." << endl << endl;
 
-    stack<Node> path = IDAstar(shuffled);
+    // pass 0 for Hamming distance heuristic, 1 for Manhattan distance heuristic
+    stack<Node> path = IDAstar(shuffled, 1);
+
+    Node goal = path.top();
+
+    cout << "Solution found in " << goal.movesFromStart << " moves." << endl << endl;  
+
+    printPath(path);
+
+/*
+    cout << endl << endl << endl;
+
+    cout << "With Hamming- heuristic of: " << shuffled.HammingDist() << endl;
+
+    cout << "Searching for shortest path..." << endl << endl;
+
+    // pass 0 for Hamming distance heuristic, 1 for Manhattan distance heuristic
+    path = IDAstar(shuffled, 0);
 
     cout << "Solution found in " << size(path) - 1 << " moves." << endl << endl;  
 
     printPath(path);
-
+*/
     return 0;
 }
 
 // uses IDA* search algorithm to find shortest path
-stack<Node> IDAstar(State puzzle)
+stack<Node> IDAstar(State puzzle, int heuristic)
 {
     stack<Node> path = {};
 
-    int heuristic = puzzle.ManhattanDist();
+    int threshold = puzzle.ManhattanDist();
 
     Node initial = Node(puzzle);
 
@@ -57,14 +74,14 @@ stack<Node> IDAstar(State puzzle)
 
     while (1)
     {
-        int tmp = Search(heuristic, path);
+        int tmp = Search(threshold, path, heuristic);
 
-        if (tmp = 1)
+        if (tmp == 1)
         {
             return path;
         }
 
-        heuristic = tmp;
+        threshold = tmp;
     }
 }
 
@@ -89,13 +106,26 @@ vector<Node> childNodes(Node parent)
 }
 
 // searches for solution
-int Search(int heuristic, stack<Node> &path)
+int Search(int threshold, stack<Node> &path, int heuristic)
 {
     Node parent = path.top();
 
-    int f = parent.movesFromStart + parent.puzzle.ManhattanDist();
+    int minMovestoGoal;
+    int *pminMovestoGoal = &minMovestoGoal;
 
-    if (f > heuristic)
+    if (heuristic == 0)
+    {
+        *pminMovestoGoal = parent.puzzle.HammingDist();
+    }
+
+    else if (heuristic == 1)
+    {
+        *pminMovestoGoal = parent.puzzle.ManhattanDist();
+    }
+    
+    int f = parent.movesFromStart + minMovestoGoal;
+
+    if (f > threshold)
     {
         return f;
     }
@@ -103,7 +133,7 @@ int Search(int heuristic, stack<Node> &path)
     if (parent.puzzle.isSolved())
     {
         cout << "Solved!" << endl;
-        //path.push(parent);
+
         return 1;
     }
 
@@ -113,23 +143,21 @@ int Search(int heuristic, stack<Node> &path)
 
     for (int i = 0; i < size(potentialMoves); i++)
     {
-        for (int i = 0; i < size(potentialMoves); i++)
-        {
-            cout << "C" << i + 1 << " dfs: " << potentialMoves[i].movesFromStart << " f: " << potentialMoves[i].puzzle.ManhattanDist() << endl;
-        }
+//        cout << "C" << i + 1 << " dfs: " << potentialMoves[i].movesFromStart << " f: " << potentialMoves[i].puzzle.ManhattanDist() << endl;
 
         path.push(potentialMoves[i]);
 
-        int tmp = Search(heuristic, path);
+        int tmp = Search(threshold, path, heuristic);
 
         if (tmp == 1)
         {
-            return tmp;
+            return 1;
         }
 
         if (tmp < min)
         {
             min = tmp;
+//            cout << "min is now: " <<  min << endl;
         }
 
         path.pop();
