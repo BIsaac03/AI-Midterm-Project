@@ -3,6 +3,7 @@
 // updates potentialMoves vector to reflect all current legal moves
 void State::findPotentialMoves()
 {
+    // uses X and Y coordinates of the 0 to find legal next moves
     if (YindexOf0 == 0)
     {
         if (XindexOf0 == 0)
@@ -63,27 +64,25 @@ void State::move(char type)
 {
     int xchange = 0;
     int ychange = 0;
-    int *pXchange = &xchange;
-    int *pYchange = &ychange;
 
     switch (type)
     {
-        case 'U': *pYchange = -1;
+        case 'U': ychange = -1;
         break;
 
-        case 'D': *pYchange = 1;
+        case 'D': ychange = 1;
         break;
 
-        case 'L': *pXchange = -1;
+        case 'L': xchange = -1;
         break;
 
-        case 'R': *pXchange = 1;
+        case 'R': xchange = 1;
     }
 
     // updates location of swapped number to where the 0 was
     positions[YindexOf0][XindexOf0] = positions[YindexOf0 + ychange][XindexOf0 + xchange];
 
-    // updates location of the X to where swapped number was
+    // updates location of the 0 to where swapped number was
     positions[YindexOf0 + ychange][XindexOf0 + xchange] = 0;
 
     // updates values for location of 0
@@ -111,10 +110,18 @@ void State::shufflePuzzle(int moves)
 // prints the location of all numbers in a (4x4) grid
 void State::printPuzzle()
 {
+    // for each index...
     for (int i = 0; i < 4; i++)
     {
-        cout << left << setw(4) << positions[i][0] << setw(4) << positions[i][1] << setw(4) << positions[i][2] << positions[i][3] << endl;
+        for (int j = 0; j < 4; j++)
+        {
+            // prints value at that index
+            cout << left << setw(4) << positions[i][j];
+        }
+
+        cout << endl;
     }
+
     cout << endl;
 }
 
@@ -143,6 +150,7 @@ int State::ManhattanDist()
 {
     int heuristic = 0;
 
+    // for each index...
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
@@ -165,6 +173,7 @@ int State::ManhattanDist()
 // returns boolean value of whether the puzzle is solved
 bool State::isSolved()
 {
+    // for each index...
     for(int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
