@@ -65,6 +65,7 @@ void State::move(char type)
     int xchange = 0;
     int ychange = 0;
 
+    // finds change in x or y value
     switch (type)
     {
         case 'U': ychange = -1;
